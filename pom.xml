@@ -28,6 +28,13 @@
     </scm>
     <properties>
         <java.version>25</java.version>
+
+        <sonar.projectKey>compliance-engine</sonar.projectKey>
+        <sonar.organization>onjazz</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.coverage.jacoco.xmlReportPaths>
+            target/site/jacoco/jacoco.xml
+        </sonar.coverage.jacoco.xmlReportPaths>
     </properties>
     <dependencies>
         <dependency>

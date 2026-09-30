@@ -1,0 +1,22 @@
+spring:
+  mongodb:
+    uri: ${MONGODB_URI:mongodb://localhost:27017/compliance}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:certs/public.pem
+
+jwt:
+  public-key: classpath:certs/public.pem
+  private-key: classpath:certs/private.pem
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

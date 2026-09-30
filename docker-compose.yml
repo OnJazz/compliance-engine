@@ -1,0 +1,29 @@
+services:
+
+  mongo:
+    image: mongo:8.0
+    container_name: compliance-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: compliance
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+  compliance-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: compliance-engine
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/compliance
+      SPRING_PROFILES_ACTIVE: dev
+    ports:
+      - "8080:8080"
+
+volumes:
+  mongo-data:

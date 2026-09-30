@@ -25,6 +25,11 @@ jobs:
           java-version: '25'
           cache: maven
 
+      - name: Create RSA private key
+        run: |
+          mkdir -p src/main/resources/certs
+          printf '%s\n' '${{ secrets.JWT_PRIVATE_KEY }}' > src/main/resources/certs/private.pem
+
       - name: Build and test
         run: ./mvnw clean verify
 

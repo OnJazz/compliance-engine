@@ -34,4 +34,4 @@ jobs:
         run: ./mvnw clean verify
 
       - name: SonarCloud analysis
-        run: ./mvnw sonar:sonar -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
+        run: ./mvnw sonar:sonar -Dsonar.token="${{ secrets.SONAR_TOKEN }}" -Dsonar.qualitygate.wait=true

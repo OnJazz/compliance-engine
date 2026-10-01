@@ -29,7 +29,7 @@
     <properties>
         <java.version>25</java.version>
 
-        <sonar.projectKey>compliance-engine</sonar.projectKey>
+        <sonar.projectKey>OnJazz_compliance-engine</sonar.projectKey>
         <sonar.organization>onjazz</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.jacoco.xmlReportPaths>

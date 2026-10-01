@@ -33,5 +33,14 @@ jobs:
       - name: Build and test
         run: ./mvnw clean verify
 
+      - name: Check SonarCloud authentication
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          curl -sS \
+            -u "$SONAR_TOKEN:" \
+            https://sonarcloud.io/api/authentication/validate
+
+
       - name: SonarCloud analysis
         run: ./mvnw sonar:sonar -Dsonar.token="${{ secrets.SONAR_TOKEN }}" -Dsonar.qualitygate.wait=true

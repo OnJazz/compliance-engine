@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(
-                        HttpStatus.BAD_REQUEST.value(),
+                        HttpStatus.CONFLICT.value(),
                         "TRANSACTION_ALREADY_EXISTS",
                         exception.getMessage()
                 ));

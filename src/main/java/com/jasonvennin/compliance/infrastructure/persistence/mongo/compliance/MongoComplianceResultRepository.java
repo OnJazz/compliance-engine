@@ -4,6 +4,8 @@ import com.jasonvennin.compliance.application.port.ComplianceResultRepository;
 import com.jasonvennin.compliance.compliance.domain.ComplianceResult;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class MongoComplianceResultRepository
         implements ComplianceResultRepository {
@@ -22,5 +24,14 @@ public class MongoComplianceResultRepository
                 ComplianceResultDocument.fromDomain(result);
 
         return repository.save(document).toDomain();
+    }
+
+    @Override
+    public Optional<ComplianceResult> findByTransactionId(
+            String transactionId
+    ) {
+        return repository
+                .findByTransactionId(transactionId)
+                .map(ComplianceResultDocument::toDomain);
     }
 }

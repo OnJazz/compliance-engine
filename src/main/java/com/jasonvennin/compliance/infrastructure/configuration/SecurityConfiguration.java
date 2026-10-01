@@ -37,6 +37,8 @@ public class SecurityConfiguration {
                         ).permitAll()
                         .requestMatchers("/api/admin/**")
                         .hasRole("ADMIN")
+                        .requestMatchers("/api/users/**")
+                        .hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/compliance/**")
                         .hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()

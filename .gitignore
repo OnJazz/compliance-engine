@@ -37,3 +37,6 @@ build/
 
 # RSA private key
 src/main/resources/certs/private.pem
+
+# Local certificates
+/local-certs/

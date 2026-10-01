@@ -18,6 +18,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import com.jasonvennin.compliance.application.usecase.GetComplianceResultUseCase;
 
 import java.util.List;
 
@@ -44,6 +45,9 @@ class ComplianceControllerTest {
 
     @MockitoBean
     private EvaluateTransactionUseCase evaluateTransactionUseCase;
+
+    @MockitoBean
+    private GetComplianceResultUseCase getComplianceResultUseCase;
 
     @Test
     void shouldEvaluateTransaction() throws Exception {

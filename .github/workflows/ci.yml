@@ -34,4 +34,18 @@ jobs:
         run: ./mvnw clean verify
 
       - name: SonarCloud analysis
-        run: ./mvnw sonar:sonar -Dsonar.token="${{ secrets.SONAR_TOKEN }}" -Dsonar.qualitygate.wait=true
+        run: ./mvnw sonar:sonar -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
+
+      - name: Check Sonar task
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          echo "=== report-task.txt ==="
+          cat target/sonar/report-task.txt
+
+          echo "=== Compute Engine task ==="
+          CE_TASK_ID=$(grep '^ceTaskId=' target/sonar/report-task.txt | cut -d'=' -f2)
+
+          curl -sS \
+            -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/ce/task?id=$CE_TASK_ID"

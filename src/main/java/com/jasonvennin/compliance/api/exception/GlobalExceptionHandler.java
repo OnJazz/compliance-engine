@@ -1,9 +1,6 @@
 package com.jasonvennin.compliance.api.exception;
 
-import com.jasonvennin.compliance.application.exception.CustomerNotFoundException;
-import com.jasonvennin.compliance.application.exception.InvalidTransactionFilterException;
-import com.jasonvennin.compliance.application.exception.TransactionAlreadyExistsException;
-import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
+import com.jasonvennin.compliance.application.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,6 +69,21 @@ public class GlobalExceptionHandler {
                         new ErrorResponse(
                                 HttpStatus.BAD_REQUEST.value(),
                                 "INVALID_TRANSACTION_FILTER",
+                                exception.getMessage()
+                        )
+                );
+    }
+
+    @ExceptionHandler(ComplianceResultNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleComplianceResultNotFound(
+            ComplianceResultNotFoundException exception
+    ) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(
+                        new ErrorResponse(
+                                HttpStatus.NOT_FOUND.value(),
+                                "COMPLIANCE_RESULT_NOT_FOUND",
                                 exception.getMessage()
                         )
                 );

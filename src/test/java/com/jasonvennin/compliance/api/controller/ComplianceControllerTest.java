@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import com.jasonvennin.compliance.application.usecase.GetComplianceResultUseCase;
+import com.jasonvennin.compliance.application.exception.ComplianceResultNotFoundException;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 import java.util.List;
 
@@ -159,5 +162,73 @@ class ComplianceControllerTest {
                 .andExpect(jsonPath("$.riskScore").value(50))
                 .andExpect(jsonPath("$.violations[0].ruleCode").value("HIGH_AMOUNT"))
                 .andExpect(jsonPath("$.violations[0].severity").value("HIGH"));
+    }
+
+    @Test
+    void shouldReturnComplianceResult() throws Exception {
+        ComplianceResult result = new ComplianceResult(
+                "transaction-1",
+                TransactionStatus.APPROVED,
+                new RiskScore(0),
+                List.of()
+        );
+
+        when(getComplianceResultUseCase.execute("transaction-1"))
+                .thenReturn(result);
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
+                                "transaction-1"
+                        )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionId").value("transaction-1"))
+                .andExpect(jsonPath("$.status").value("APPROVED"))
+                .andExpect(jsonPath("$.riskScore").value(0))
+                .andExpect(jsonPath("$.violations").isEmpty());
+
+        verify(getComplianceResultUseCase)
+                .execute("transaction-1");
+    }
+
+    @Test
+    void shouldReturnComplianceResultNotFound() throws Exception {
+        when(getComplianceResultUseCase.execute("unknown"))
+                .thenThrow(
+                        new ComplianceResultNotFoundException("unknown")
+                );
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
+                                "unknown"
+                        )
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.error")
+                        .value("COMPLIANCE_RESULT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message")
+                        .value(
+                                "Compliance result not found for transaction: unknown"
+                        ));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenComplianceResultTransactionIdIsBlank()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
+                                "   "
+                        )
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").value("VALIDATION_ERROR"));
+
+        verifyNoInteractions(getComplianceResultUseCase);
     }
 }

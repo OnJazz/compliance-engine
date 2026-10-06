@@ -1,6 +1,6 @@
 package com.jasonvennin.compliance.application.usecase;
 
-import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
+import com.jasonvennin.compliance.application.exception.ComplianceResultNotFoundException;
 import com.jasonvennin.compliance.application.port.ComplianceResultRepository;
 import com.jasonvennin.compliance.compliance.domain.ComplianceResult;
 import com.jasonvennin.compliance.compliance.domain.RiskScore;
@@ -61,7 +61,7 @@ class GetComplianceResultUseCaseTest {
         ).thenReturn(Optional.empty());
 
         assertThrows(
-                TransactionNotFoundException.class,
+                ComplianceResultNotFoundException.class,
                 () -> getComplianceResultUseCase.execute("unknown")
         );
 

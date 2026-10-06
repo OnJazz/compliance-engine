@@ -32,6 +32,7 @@ import java.util.Set;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -320,6 +321,116 @@ class ComplianceControllerIntegrationTest {
         mockMvc.perform(
                         post(
                                 "/api/compliance/transactions/{transactionId}/evaluate",
+                                "transaction-1"
+                        )
+                )
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldGetComplianceResultWithValidJwt() throws Exception {
+
+        Customer customer = new Customer(
+                "customer-1",
+                "external-customer-1",
+                "John",
+                "Doe",
+                "CH",
+                RiskLevel.LOW
+        );
+
+        Transaction transaction = new Transaction(
+                "transaction-1",
+                "external-transaction-1",
+                "customer-1",
+                new BigDecimal("1000"),
+                "CHF",
+                TransactionType.TRANSFER,
+                "CH",
+                "CH",
+                Instant.parse("2026-09-28T07:00:00Z"),
+                TransactionStatus.PENDING
+        );
+
+        customerRepository.save(customer);
+        transactionRepository.save(transaction);
+
+        String token = jwtService.generateToken(
+                "admin",
+                Set.of(Role.ADMIN, Role.USER)
+        );
+
+        // First evaluate the transaction so the compliance result exists.
+        mockMvc.perform(
+                        post(
+                                "/api/compliance/transactions/{transactionId}/evaluate",
+                                "transaction-1"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + token
+                                )
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
+                                "transaction-1"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + token
+                                )
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.transactionId")
+                        .value("transaction-1"))
+                .andExpect(jsonPath("$.status")
+                        .value("APPROVED"))
+                .andExpect(jsonPath("$.riskScore")
+                        .value(0))
+                .andExpect(jsonPath("$.violations")
+                        .isEmpty());
+    }
+
+    @Test
+    void shouldReturnComplianceResultNotFoundWithValidJwt()
+            throws Exception {
+
+        String token = jwtService.generateToken(
+                "admin",
+                Set.of(Role.ADMIN, Role.USER)
+        );
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
+                                "unknown"
+                        )
+                                .header(
+                                        "Authorization",
+                                        "Bearer " + token
+                                )
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status")
+                        .value(404))
+                .andExpect(jsonPath("$.error")
+                        .value("COMPLIANCE_RESULT_NOT_FOUND"))
+                .andExpect(jsonPath("$.message")
+                        .value(
+                                "Compliance result not found for transaction: unknown"
+                        ));
+    }
+
+    @Test
+    void shouldRequireAuthenticationForGetComplianceResult()
+            throws Exception {
+
+        mockMvc.perform(
+                        get(
+                                "/api/compliance/transactions/{transactionId}",
                                 "transaction-1"
                         )
                 )

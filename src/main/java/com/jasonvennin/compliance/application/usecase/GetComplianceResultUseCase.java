@@ -1,6 +1,6 @@
 package com.jasonvennin.compliance.application.usecase;
 
-import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
+import com.jasonvennin.compliance.application.exception.ComplianceResultNotFoundException;
 import com.jasonvennin.compliance.application.port.ComplianceResultRepository;
 import com.jasonvennin.compliance.compliance.domain.ComplianceResult;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class GetComplianceResultUseCase {
         return complianceResultRepository
                 .findByTransactionId(transactionId)
                 .orElseThrow(() ->
-                        new TransactionNotFoundException(transactionId)
+                        new ComplianceResultNotFoundException(transactionId)
                 );
     }
 }

@@ -7,6 +7,7 @@ import com.jasonvennin.compliance.application.exception.TransactionAlreadyExists
 import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
 import com.jasonvennin.compliance.application.usecase.CreateTransactionUseCase;
 import com.jasonvennin.compliance.application.usecase.GetTransactionUseCase;
+import com.jasonvennin.compliance.application.usecase.GetTransactionsUseCase;
 import com.jasonvennin.compliance.transaction.domain.Transaction;
 import com.jasonvennin.compliance.transaction.domain.TransactionStatus;
 import com.jasonvennin.compliance.transaction.domain.TransactionType;
@@ -17,13 +18,18 @@ import org.springframework.boot.security.oauth2.server.resource.autoconfigure.we
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -54,6 +60,9 @@ class TransactionControllerTest {
 
     @MockitoBean
     private GetTransactionUseCase getTransactionUseCase;
+
+    @MockitoBean
+    private GetTransactionsUseCase getTransactionsUseCase;
 
     @Test
     void shouldCreateTransaction() throws Exception {
@@ -155,6 +164,64 @@ class TransactionControllerTest {
                 .andExpect(status().isBadRequest());
 
         verifyNoInteractions(createTransactionUseCase);
+    }
+
+    @Test
+    void shouldGetTransactions() throws Exception {
+
+        Transaction transaction = transaction();
+
+        PageImpl<Transaction> page =
+                new PageImpl<>(
+                        List.of(transaction),
+                        PageRequest.of(
+                                0,
+                                20,
+                                Sort.by(
+                                        Sort.Direction.DESC,
+                                        "createdAt"
+                                )
+                        ),
+                        1
+                );
+
+        when(getTransactionsUseCase.execute(
+                eq("customer-1"),
+                eq("PENDING"),
+                eq("TRANSFER"),
+                any()
+        )).thenReturn(page);
+
+        mockMvc.perform(
+                        get("/api/transactions")
+                                .param("customerId", "customer-1")
+                                .param("status", "PENDING")
+                                .param("type", "TRANSFER")
+                                .param("page", "0")
+                                .param("size", "20")
+                                .param("sortBy", "createdAt")
+                                .param("direction", "desc")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id")
+                        .value("transaction-1"))
+                .andExpect(jsonPath("$.content[0].customerId")
+                        .value("customer-1"))
+                .andExpect(jsonPath("$.content[0].status")
+                        .value("PENDING"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(20))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1));
+
+        verify(getTransactionsUseCase).execute(
+                eq("customer-1"),
+                eq("PENDING"),
+                eq("TRANSFER"),
+                any()
+        );
     }
 
     @Test

@@ -1,6 +1,8 @@
 package com.jasonvennin.compliance.application.port;
 
 import com.jasonvennin.compliance.transaction.domain.Transaction;
+import com.jasonvennin.compliance.transaction.domain.TransactionStatus;
+import com.jasonvennin.compliance.transaction.domain.TransactionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,8 +16,8 @@ public interface TransactionRepository {
 
     Page<Transaction> findAll(
             String customerId,
-            String status,
-            String type,
+            TransactionStatus status,
+            TransactionType type,
             Pageable pageable
     );
 }

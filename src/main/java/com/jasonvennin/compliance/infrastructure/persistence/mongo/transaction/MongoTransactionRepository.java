@@ -48,29 +48,30 @@ public class MongoTransactionRepository
     @Override
     public Page<Transaction> findAll(
             String customerId,
-            String status,
-            String type,
+            TransactionStatus status,
+            TransactionType type,
             Pageable pageable
     ) {
         List<Criteria> criteria = new ArrayList<>();
 
         if (customerId != null && !customerId.isBlank()) {
             criteria.add(
-                    Criteria.where("customerId").is(customerId)
+                    Criteria.where("customerId")
+                            .is(customerId)
             );
         }
 
-        if (status != null && !status.isBlank()) {
+        if (status != null) {
             criteria.add(
                     Criteria.where("status")
-                            .is(TransactionStatus.valueOf(status))
+                            .is(status)
             );
         }
 
-        if (type != null && !type.isBlank()) {
+        if (type != null) {
             criteria.add(
                     Criteria.where("type")
-                            .is(TransactionType.valueOf(type))
+                            .is(type)
             );
         }
 

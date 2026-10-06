@@ -284,7 +284,7 @@ class MongoTransactionRepositoryIntegrationTest {
         Page<Transaction> result =
                 transactionRepository.findAll(
                         null,
-                        "BLOCKED",
+                        TransactionStatus.BLOCKED,
                         null,
                         PageRequest.of(0, 20)
                 );
@@ -330,7 +330,7 @@ class MongoTransactionRepositoryIntegrationTest {
                 transactionRepository.findAll(
                         null,
                         null,
-                        "PAYMENT",
+                        TransactionType.PAYMENT,
                         PageRequest.of(0, 20)
                 );
 
@@ -391,8 +391,8 @@ class MongoTransactionRepositoryIntegrationTest {
         Page<Transaction> result =
                 transactionRepository.findAll(
                         "customer-1",
-                        "BLOCKED",
-                        "TRANSFER",
+                        TransactionStatus.BLOCKED,
+                        TransactionType.TRANSFER,
                         PageRequest.of(
                                 0,
                                 20,

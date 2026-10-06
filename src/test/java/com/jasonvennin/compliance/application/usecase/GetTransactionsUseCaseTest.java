@@ -1,5 +1,6 @@
 package com.jasonvennin.compliance.application.usecase;
 
+import com.jasonvennin.compliance.application.exception.InvalidTransactionFilterException;
 import com.jasonvennin.compliance.application.port.TransactionRepository;
 import com.jasonvennin.compliance.transaction.domain.Transaction;
 import com.jasonvennin.compliance.transaction.domain.TransactionStatus;
@@ -15,11 +16,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.verifyNoInteractions;
 
 class GetTransactionsUseCaseTest {
 
@@ -52,8 +54,8 @@ class GetTransactionsUseCaseTest {
 
         when(transactionRepository.findAll(
                 "customer-1",
-                "PENDING",
-                "TRANSFER",
+                TransactionStatus.PENDING,
+                TransactionType.TRANSFER,
                 pageable
         )).thenReturn(expectedPage);
 
@@ -84,8 +86,8 @@ class GetTransactionsUseCaseTest {
 
         verify(transactionRepository).findAll(
                 eq("customer-1"),
-                eq("PENDING"),
-                eq("TRANSFER"),
+                eq(TransactionStatus.PENDING),
+                eq(TransactionType.TRANSFER),
                 eq(pageable)
         );
     }
@@ -139,6 +141,50 @@ class GetTransactionsUseCaseTest {
                 eq(null),
                 eq(pageable)
         );
+    }
+
+    @Test
+    void shouldRejectInvalidStatus() {
+
+        TransactionRepository transactionRepository =
+                mock(TransactionRepository.class);
+
+        GetTransactionsUseCase useCase =
+                new GetTransactionsUseCase(transactionRepository);
+
+        assertThatThrownBy(() ->
+                useCase.execute(
+                        null,
+                        "INVALID",
+                        null,
+                        PageRequest.of(0, 20)
+                )
+        )
+                .isInstanceOf(InvalidTransactionFilterException.class);
+
+        verifyNoInteractions(transactionRepository);
+    }
+
+    @Test
+    void shouldRejectInvalidType() {
+
+        TransactionRepository transactionRepository =
+                mock(TransactionRepository.class);
+
+        GetTransactionsUseCase useCase =
+                new GetTransactionsUseCase(transactionRepository);
+
+        assertThatThrownBy(() ->
+                useCase.execute(
+                        null,
+                        null,
+                        "INVALID",
+                        PageRequest.of(0, 20)
+                )
+        )
+                .isInstanceOf(InvalidTransactionFilterException.class);
+
+        verifyNoInteractions(transactionRepository);
     }
 
     private Transaction transaction() {

@@ -1,6 +1,7 @@
 package com.jasonvennin.compliance.api.exception;
 
 import com.jasonvennin.compliance.application.exception.CustomerNotFoundException;
+import com.jasonvennin.compliance.application.exception.InvalidTransactionFilterException;
 import com.jasonvennin.compliance.application.exception.TransactionAlreadyExistsException;
 import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
 import jakarta.validation.ConstraintViolationException;
@@ -59,5 +60,20 @@ public class GlobalExceptionHandler {
                         "TRANSACTION_ALREADY_EXISTS",
                         exception.getMessage()
                 ));
+    }
+
+    @ExceptionHandler(InvalidTransactionFilterException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidTransactionFilter(
+            InvalidTransactionFilterException exception
+    ) {
+        return ResponseEntity
+                .badRequest()
+                .body(
+                        new ErrorResponse(
+                                HttpStatus.BAD_REQUEST.value(),
+                                "INVALID_TRANSACTION_FILTER",
+                                exception.getMessage()
+                        )
+                );
     }
 }

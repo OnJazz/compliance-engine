@@ -8,15 +8,20 @@ import com.jasonvennin.compliance.application.usecase.GetTransactionUseCase;
 import com.jasonvennin.compliance.application.usecase.GetTransactionsUseCase;
 import com.jasonvennin.compliance.transaction.domain.Transaction;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/transactions")
+@Validated
 public class TransactionController {
 
     private final CreateTransactionUseCase createTransactionUseCase;
@@ -50,10 +55,25 @@ public class TransactionController {
             @RequestParam(required = false) String customerId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String type,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction
+
+            @RequestParam(defaultValue = "0")
+            @Min(value = 0, message = "Page must be greater than or equal to 0")
+            int page,
+
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "Size must be greater than 0")
+            @Max(value = 100, message = "Size must not exceed 100")
+            int size,
+
+            @RequestParam(defaultValue = "createdAt")
+            String sortBy,
+
+            @RequestParam(defaultValue = "desc")
+            @Pattern(
+                    regexp = "(?i)asc|desc",
+                    message = "Direction must be either 'asc' or 'desc'"
+            )
+            String direction
     ) {
         Sort.Direction sortDirection =
                 Sort.Direction.fromString(direction);

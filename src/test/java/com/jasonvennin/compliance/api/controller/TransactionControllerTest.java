@@ -3,6 +3,7 @@ package com.jasonvennin.compliance.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jasonvennin.compliance.api.dto.CreateTransactionRequest;
 import com.jasonvennin.compliance.api.exception.GlobalExceptionHandler;
+import com.jasonvennin.compliance.application.exception.InvalidTransactionFilterException;
 import com.jasonvennin.compliance.application.exception.TransactionAlreadyExistsException;
 import com.jasonvennin.compliance.application.exception.TransactionNotFoundException;
 import com.jasonvennin.compliance.application.usecase.CreateTransactionUseCase;
@@ -269,6 +270,56 @@ class TransactionControllerTest {
 
         verify(getTransactionUseCase)
                 .execute("unknown");
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenStatusIsInvalid() throws Exception {
+
+        when(getTransactionsUseCase.execute(
+                any(),
+                eq("INVALID"),
+                any(),
+                any()
+        )).thenThrow(
+                new InvalidTransactionFilterException(
+                        "status",
+                        "INVALID"
+                )
+        );
+
+        mockMvc.perform(
+                        get("/api/transactions")
+                                .param("status", "INVALID")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error")
+                        .value("INVALID_TRANSACTION_FILTER"));
+    }
+
+    @Test
+    void shouldReturnBadRequestWhenTypeIsInvalid() throws Exception {
+
+        when(getTransactionsUseCase.execute(
+                any(),
+                any(),
+                eq("INVALID"),
+                any()
+        )).thenThrow(
+                new InvalidTransactionFilterException(
+                        "type",
+                        "INVALID"
+                )
+        );
+
+        mockMvc.perform(
+                        get("/api/transactions")
+                                .param("type", "INVALID")
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error")
+                        .value("INVALID_TRANSACTION_FILTER"));
     }
 
     private Transaction transaction() {
